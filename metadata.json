@@ -1,0 +1,6 @@
+{
+  "name": "SIM AL-HANIF",
+  "description": "Sistem Informasi Manajemen Sekolah dan Boarding School SMP IT Putra Al-Hanif",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

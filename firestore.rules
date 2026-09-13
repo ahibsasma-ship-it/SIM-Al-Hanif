@@ -1,0 +1,110 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isBootstrappedAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.email == 'ahibsasma@gmail.com' || request.auth.token.email == 'admin@alhanif.sch.id');
+    }
+
+    function getUserData() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data
+        : null;
+    }
+
+    function hasRole(role) {
+      return isBootstrappedAdmin() || (isAuthenticated() && getUserData() != null && getUserData().role == role);
+    }
+
+    function isAdmin() {
+      return isBootstrappedAdmin() || hasRole('admin');
+    }
+
+    function isTeacher() {
+      return isAdmin() || hasRole('guru');
+    }
+
+    function isStaff() {
+      return isAdmin() || hasRole('tendik');
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Students Collection
+    match /students/{studentId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Teachers Collection
+    match /teachers/{teacherId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Staff Collection
+    match /staff/{staffId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Classes Collection
+    match /classes/{classId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Subjects Collection
+    match /subjects/{subjectId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Attendance Collection
+    match /attendance/{attendanceId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Attendance Summaries Collection
+    match /attendance_summaries/{summaryId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Announcements Collection
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Notifications Collection
+    match /notifications/{notificationId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Audit Logs Collection
+    match /audit_logs/{logId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if false; // immutable audit trail
+    }
+
+    // Settings Collection
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

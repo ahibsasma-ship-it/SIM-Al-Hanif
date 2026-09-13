@@ -1,0 +1,176 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with role-based access control",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "fullName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "guru", "tendik", "siswa"] },
+        "status": { "type": "string", "enum": ["active", "inactive", "suspended"] },
+        "studentId": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "staffId": { "type": "string" },
+        "classId": { "type": "string" }
+      },
+      "required": ["uid", "fullName", "role"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Student record at SMP IT Putra Al-Hanif",
+      "type": "object",
+      "properties": {
+        "nis": { "type": "string" },
+        "nisn": { "type": "string" },
+        "fullName": { "type": "string" },
+        "gender": { "type": "string", "enum": ["L", "P"] },
+        "classId": { "type": "string" },
+        "className": { "type": "string" },
+        "grade": { "type": "number" },
+        "boardingStatus": { "type": "string", "enum": ["boarding", "fullday"] },
+        "dormRoom": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "graduated", "transferred", "inactive"] }
+      },
+      "required": ["nis", "fullName", "gender", "classId", "className", "grade", "boardingStatus", "status"]
+    },
+    "Teacher": {
+      "title": "Teacher",
+      "description": "Teacher/Ustadz record",
+      "type": "object",
+      "properties": {
+        "nip": { "type": "string" },
+        "fullName": { "type": "string" },
+        "subjects": { "type": "array" },
+        "homeroomClassId": { "type": "string" },
+        "homeroomClassName": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "inactive"] }
+      },
+      "required": ["nip", "fullName", "status"]
+    },
+    "Staff": {
+      "title": "Staff",
+      "description": "Educational staff (Tenaga Kependidikan / Tendik)",
+      "type": "object",
+      "properties": {
+        "nip": { "type": "string" },
+        "fullName": { "type": "string" },
+        "position": { "type": "string" },
+        "department": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "inactive"] }
+      },
+      "required": ["nip", "fullName", "position", "department", "status"]
+    },
+    "SchoolClass": {
+      "title": "SchoolClass",
+      "description": "Academic classroom definition",
+      "type": "object",
+      "properties": {
+        "classId": { "type": "string" },
+        "className": { "type": "string" },
+        "grade": { "type": "number" },
+        "academicYear": { "type": "string" },
+        "homeroomTeacherId": { "type": "string" },
+        "homeroomTeacherName": { "type": "string" },
+        "studentCount": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "archived"] }
+      },
+      "required": ["classId", "className", "grade", "academicYear", "status"]
+    },
+    "AttendanceRecord": {
+      "title": "AttendanceRecord",
+      "description": "Daily school and boarding attendance entry",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "classId": { "type": "string" },
+        "className": { "type": "string" },
+        "date": { "type": "string" },
+        "status": { "type": "string", "enum": ["H", "S", "I", "A"] },
+        "session": { "type": "string", "enum": ["school", "boarding_subuh", "boarding_maghrib", "boarding_isya"] },
+        "note": { "type": "string" },
+        "recordedBy": { "type": "string" }
+      },
+      "required": ["studentId", "studentName", "classId", "className", "date", "status", "session"]
+    },
+    "AttendanceSummary": {
+      "title": "AttendanceSummary",
+      "description": "Class or daily attendance aggregate",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "classId": { "type": "string" },
+        "totalStudents": { "type": "number" },
+        "present": { "type": "number" },
+        "sick": { "type": "number" },
+        "permit": { "type": "number" },
+        "absent": { "type": "number" }
+      },
+      "required": ["date", "classId", "totalStudents"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable audit record of user and system actions",
+      "type": "object",
+      "properties": {
+        "action": { "type": "string" },
+        "module": { "type": "string" },
+        "actorId": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["action", "module", "actorId", "details"]
+    },
+    "Setting": {
+      "title": "Setting",
+      "description": "School configuration parameters",
+      "type": "object",
+      "properties": {
+        "key": { "type": "string" },
+        "value": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["key"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles and authentication mapping"
+    },
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Registered students roster"
+    },
+    "/teachers/{teacherId}": {
+      "schema": "Teacher",
+      "description": "Teacher and ustadz directory"
+    },
+    "/staff/{staffId}": {
+      "schema": "Staff",
+      "description": "Non-teaching school staff"
+    },
+    "/classes/{classId}": {
+      "schema": "SchoolClass",
+      "description": "Classes and homeroom information"
+    },
+    "/attendance/{attendanceId}": {
+      "schema": "AttendanceRecord",
+      "description": "Daily attendance logs for school and pesantren"
+    },
+    "/attendance_summaries/{summaryId}": {
+      "schema": "AttendanceSummary",
+      "description": "Calculated daily attendance summaries"
+    },
+    "/audit_logs/{logId}": {
+      "schema": "AuditLog",
+      "description": "System audit trail"
+    },
+    "/settings/{settingId}": {
+      "schema": "Setting",
+      "description": "General school parameters"
+    }
+  }
+}
