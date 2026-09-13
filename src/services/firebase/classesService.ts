@@ -36,10 +36,10 @@ export const mapFirestoreToClass = (id: string, data: any): SchoolClass => {
 export const getClasses = async (): Promise<SchoolClass[]> => {
   try {
     const classesRef = collection(db, COLLECTION_NAME);
-    const q = query(classesRef, orderBy('className', 'asc'));
-    const snapshot = await getDocs(q);
-    
-    return snapshot.docs.map(doc => mapFirestoreToClass(doc.id, doc.data()));
+    const snapshot = await getDocs(classesRef);
+    const list = snapshot.docs.map(doc => mapFirestoreToClass(doc.id, doc.data()));
+    list.sort((a, b) => (a.className || '').localeCompare(b.className || '', 'id'));
+    return list;
   } catch (error: any) {
     if (error?.code === 'permission-denied' || error?.message?.includes('Missing or insufficient permissions')) {
       handleFirestoreError(error, OperationType.LIST, COLLECTION_NAME);

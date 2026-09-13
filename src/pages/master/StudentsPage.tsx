@@ -63,7 +63,9 @@ export const StudentsPage: React.FC<StudentsPageProps> = ({ onSelectStudent }) =
     parentName: '',
     parentPhone: '',
     classId: '',
-    boardingStatus: 'boarding' as 'boarding' | 'non_boarding'
+    boardingStatus: 'boarding' as 'boarding' | 'non_boarding',
+    dormitoryName: '',
+    halaqoh: ''
   });
 
   const fetchStudents = async () => {
@@ -105,7 +107,9 @@ export const StudentsPage: React.FC<StudentsPageProps> = ({ onSelectStudent }) =
       parentName: '',
       parentPhone: '',
       classId: classes[0]?.classId || 'CLS-8A-2026',
-      boardingStatus: 'boarding'
+      boardingStatus: 'boarding',
+      dormitoryName: 'Asrama Abu Bakar',
+      halaqoh: 'Halaqoh Ustadz Ahmad Fauzi, Lc.'
     });
     setEditingStudent(null);
     setShowAddModal(true);
@@ -126,7 +130,9 @@ export const StudentsPage: React.FC<StudentsPageProps> = ({ onSelectStudent }) =
       parentName: student.parentName || '',
       parentPhone: student.parentPhone || '',
       classId: student.classId,
-      boardingStatus: student.boardingStatus
+      boardingStatus: student.boardingStatus,
+      dormitoryName: student.dormitoryName || '',
+      halaqoh: student.halaqoh || ''
     });
     setShowAddModal(true);
   };

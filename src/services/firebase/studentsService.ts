@@ -41,6 +41,8 @@ export const mapFirestoreToStudent = (id: string, data: any): Student => {
     className: data.namaKelas || data.className || '',
     status: data.statusSantri || data.status || 'active',
     boardingStatus: (data.statusAsrama === 'non_boarding' || data.boardingStatus === 'non_boarding') ? 'non_boarding' : 'boarding',
+    dormitoryName: data.asrama || data.namaAsrama || data.gedungAsrama || data.dormitoryName || '',
+    halaqoh: data.halaqoh || data.namaHalaqoh || data.ustadzHalaqoh || '',
     createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : (data.waktuDibuat?.toDate ? data.waktuDibuat.toDate() : new Date()),
     updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : (data.waktuDiperbarui?.toDate ? data.waktuDiperbarui.toDate() : new Date())
   };
@@ -68,6 +70,11 @@ const buildStudentFirestorePayload = (studentData: Partial<Student>) => {
     idKelas: studentData.classId || '',
     statusSantri: studentData.status || 'active',
     statusAsrama: studentData.boardingStatus,
+    asrama: studentData.dormitoryName || '',
+    namaAsrama: studentData.dormitoryName || '',
+    dormitoryName: studentData.dormitoryName || '',
+    halaqoh: studentData.halaqoh || '',
+    namaHalaqoh: studentData.halaqoh || '',
     waktuDiperbarui: serverTimestamp(),
     updatedAt: serverTimestamp()
   };
@@ -89,15 +96,12 @@ export const getStudents = async (filters?: {
 }): Promise<Student[]> => {
   try {
     const studentsRef = collection(db, COLLECTION_NAME);
-    let q = query(studentsRef, orderBy('fullName', 'asc'));
-
-    if (filters?.classId && filters.classId !== 'all') {
-      q = query(studentsRef, where('classId', '==', filters.classId), orderBy('fullName', 'asc'));
-    }
-
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(studentsRef);
     let students = snapshot.docs.map(d => mapFirestoreToStudent(d.id, d.data()));
 
+    if (filters?.classId && filters.classId !== 'all') {
+      students = students.filter(s => s.classId === filters.classId);
+    }
     if (filters?.status && filters.status !== 'all') {
       students = students.filter(s => s.status === filters.status);
     }
@@ -105,6 +109,7 @@ export const getStudents = async (filters?: {
       students = students.filter(s => s.boardingStatus === filters.boardingStatus);
     }
 
+    students.sort((a, b) => (a.fullName || '').localeCompare(b.fullName || '', 'id'));
     return students;
   } catch (error: any) {
     if (error?.code === 'permission-denied' || error?.message?.includes('Missing or insufficient permissions')) {
@@ -118,10 +123,13 @@ export const getStudents = async (filters?: {
 export const getStudentsByClass = async (classId: string): Promise<Student[]> => {
   try {
     const studentsRef = collection(db, COLLECTION_NAME);
-    const q = query(studentsRef, where('classId', '==', classId), orderBy('fullName', 'asc'));
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(studentsRef);
+    const students = snapshot.docs
+      .map(d => mapFirestoreToStudent(d.id, d.data()))
+      .filter(s => s.classId === classId);
     
-    return snapshot.docs.map(d => mapFirestoreToStudent(d.id, d.data()));
+    students.sort((a, b) => (a.fullName || '').localeCompare(b.fullName || '', 'id'));
+    return students;
   } catch (error: any) {
     if (error?.code === 'permission-denied' || error?.message?.includes('Missing or insufficient permissions')) {
       handleFirestoreError(error, OperationType.LIST, COLLECTION_NAME);

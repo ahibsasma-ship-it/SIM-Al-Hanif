@@ -46,14 +46,11 @@ export const getAttendanceByClassAndDate = async (
 ): Promise<AttendanceRecord[]> => {
   try {
     const attendanceRef = collection(db, COLLECTION_NAME);
-    const q = query(
-      attendanceRef, 
-      where('classId', '==', classId),
-      where('date', '==', date)
-    );
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(attendanceRef);
     
-    return snapshot.docs.map(doc => mapFirestoreToAttendance(doc.id, doc.data()));
+    return snapshot.docs
+      .map(doc => mapFirestoreToAttendance(doc.id, doc.data()))
+      .filter(item => item.classId === classId && item.date === date);
   } catch (error: any) {
     if (error?.code === 'permission-denied' || error?.message?.includes('Missing or insufficient permissions')) {
       handleFirestoreError(error, OperationType.LIST, COLLECTION_NAME);
@@ -188,15 +185,12 @@ export const getAttendanceHistory = async (filters?: {
 }): Promise<AttendanceRecord[]> => {
   try {
     const attendanceRef = collection(db, COLLECTION_NAME);
-    let q = query(attendanceRef, orderBy('date', 'desc'));
-
-    if (filters?.classId && filters.classId !== 'all') {
-      q = query(attendanceRef, where('classId', '==', filters.classId), orderBy('date', 'desc'));
-    }
-
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(attendanceRef);
     let list = snapshot.docs.map(doc => mapFirestoreToAttendance(doc.id, doc.data()));
 
+    if (filters?.classId && filters.classId !== 'all') {
+      list = list.filter(item => item.classId === filters.classId);
+    }
     if (filters?.studentId && filters.studentId !== 'all') {
       list = list.filter(item => item.studentId === filters.studentId);
     }
@@ -210,6 +204,7 @@ export const getAttendanceHistory = async (filters?: {
       list = list.filter(item => item.status === filters.status);
     }
 
+    list.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
     return list;
   } catch (error: any) {
     if (error?.code === 'permission-denied' || error?.message?.includes('Missing or insufficient permissions')) {

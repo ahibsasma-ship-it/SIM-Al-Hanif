@@ -29,16 +29,27 @@ export const createAuditLog = async (
   }
 };
 
-export const getRecentAuditLogs = async (limitCount = 10): Promise<AuditLog[]> => {
+export const getRecentAuditLogs = async (limitCount = 50): Promise<AuditLog[]> => {
   try {
     const logsRef = collection(db, 'audit_logs');
-    const q = query(logsRef, orderBy('createdAt', 'desc'), limit(limitCount));
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(logsRef);
     
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...(doc.data() as Omit<AuditLog, 'id'>)
-    }));
+    const logs = snapshot.docs.map(doc => {
+      const d = doc.data();
+      return {
+        id: doc.id,
+        ...d,
+        createdAt: d.createdAt?.toDate ? d.createdAt.toDate() : (d.createdAt || new Date())
+      } as AuditLog;
+    });
+
+    logs.sort((a, b) => {
+      const timeA = a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime() || 0;
+      const timeB = b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime() || 0;
+      return timeB - timeA;
+    });
+
+    return logs.slice(0, limitCount);
   } catch (error) {
     console.error('Error fetching audit logs:', error);
     return [];

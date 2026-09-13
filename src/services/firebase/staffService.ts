@@ -20,13 +20,14 @@ const COLLECTION_NAME = 'staff';
 export const getStaffList = async (): Promise<Staff[]> => {
   try {
     const staffRef = collection(db, COLLECTION_NAME);
-    const q = query(staffRef, orderBy('fullName', 'asc'));
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(staffRef);
     
-    return snapshot.docs.map(doc => ({
+    const list = snapshot.docs.map(doc => ({
       id: doc.id,
       ...(doc.data() as Omit<Staff, 'id'>)
     }));
+    list.sort((a, b) => (a.fullName || '').localeCompare(b.fullName || '', 'id'));
+    return list;
   } catch (error: any) {
     if (error?.code === 'permission-denied' || error?.message?.includes('Missing or insufficient permissions')) {
       handleFirestoreError(error, OperationType.LIST, COLLECTION_NAME);

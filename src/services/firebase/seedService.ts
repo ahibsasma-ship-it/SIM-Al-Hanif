@@ -6,13 +6,13 @@ import { handleFirestoreError, OperationType } from './firestoreError';
 
 export const isDatabaseInitialized = async (): Promise<boolean> => {
   try {
-    const snap = await getDocs(collection(db, 'classes'));
-    return !snap.empty;
+    const [classesSnap, studentsSnap] = await Promise.all([
+      getDocs(collection(db, 'classes')),
+      getDocs(collection(db, 'students'))
+    ]);
+    return !classesSnap.empty && !studentsSnap.empty;
   } catch (err: any) {
-    if (err?.code === 'permission-denied' || err?.message?.includes('Missing or insufficient permissions')) {
-      handleFirestoreError(err, OperationType.LIST, 'classes');
-    }
-    console.error('Check db error:', err);
+    console.warn('Check db error:', err);
     return false;
   }
 };

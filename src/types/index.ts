@@ -10,11 +10,17 @@ export interface UserProfile {
   username?: string;
   photoUrl?: string;
   phone?: string;
+  address?: string;
   status: UserStatus;
   studentId?: string;
   teacherId?: string;
   staffId?: string;
   classId?: string;
+  niy?: string;
+  nis?: string;
+  positions?: string[];
+  dormitoryName?: string;
+  halaqoh?: string;
   createdAt?: any;
   updatedAt?: any;
   lastLoginAt?: any;
@@ -42,19 +48,38 @@ export interface Student {
   status: StudentStatus;
   photoUrl?: string;
   boardingStatus: BoardingStatus;
+  dormitoryName?: string; // Asrama / Gedung Kamar (misal: Asrama Abu Bakar Shiddiq)
+  halaqoh?: string; // Kelompok Halaqoh (misal: Halaqoh Ustadz Ahmad Fauzi, Lc.)
   createdAt?: any;
   updatedAt?: any;
 }
 
+export const TEACHER_POSITIONS = [
+  'Mudir',
+  'Kepala Sekolah',
+  'Kabid Kesantrian',
+  'Kabid TU',
+  'Kabid Kepala Rumah Tangga',
+  'Waka Kurikulum',
+  'Wali Kelas',
+  'Guru Mapel',
+  'Musyrif Asrama',
+  'Musyrif Halaqoh'
+] as const;
+
+export type TeacherPosition = (typeof TEACHER_POSITIONS)[number] | string;
+
 export interface Teacher {
   id?: string;
   teacherId: string; // TCH-2026-0001
-  nip: string;
+  niy: string; // Nomor Induk Yayasan (NIY)
+  nip?: string; // Alias kompatibilitas NIP lama
   fullName: string;
   gender: 'L' | 'P';
-  email: string;
+  email?: string; // Email tidak wajib / opsional
   phone: string;
   address: string;
+  positions: string[]; // Satu orang bisa mengemban lebih dari satu jabatan
   subjects: string[];
   classIds: string[];
   status: 'active' | 'inactive';
